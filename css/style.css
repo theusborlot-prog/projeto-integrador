@@ -1,0 +1,417 @@
+/* =========================================
+   SISTEMA DE DESIGN UNIFICADO - CHURRASCADO
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Paleta de Cores Identitárias */
+    --cor-primaria: #B85042;
+    --cor-primaria-hover: #9E4438;
+    --cor-sucesso: #2A9D8F;
+    --cor-sucesso-hover: #228074;
+    
+    /* Configurações de Telas */
+    --cor-fundo: #F8F9FA;
+    --cor-surface: #FFFFFF;
+    --cor-texto: #111827;
+    --cor-secundaria: #6B7280;
+    --cor-borda: #E5E7EB;
+    
+    /* Sombras e Raios de Curvatura */
+    --sombra-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --sombra-md: 0 12px 30px rgba(15, 23, 42, 0.08);
+    --raio-md: 12px;
+    --raio-lg: 16px;
+    --transicao: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* === RESET BASE === */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Inter', system-ui, sans-serif; 
+    -webkit-font-smoothing: antialiased;
+}
+
+html { scroll-behavior: smooth; }
+.oculto { display: none !important; }
+
+/* === TOAST (SISTEMA DE NOTIFICAÇÃO) === */
+.toast {
+    position: fixed; bottom: 32px; left: 50%; 
+    transform: translateX(-50%) translateY(100px);
+    background: #1F2937; color: #FFFFFF; padding: 14px 28px;
+    border-radius: 50px; z-index: 11000; 
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    opacity: 0; font-size: 0.95rem; font-weight: 500;
+    box-shadow: var(--sombra-md); pointer-events: none; text-align: center;
+}
+.toast.mostrar { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+
+/* =========================================
+   1. UX PREMIUM: VITRINE DO CLIENTE (APP-LIKE)
+   ========================================= */
+.vitrine-body { 
+    background-color: var(--cor-surface); 
+    color: var(--cor-texto); 
+    padding-bottom: 40px;
+}
+
+.header-vitrine {
+    position: relative;
+    height: 320px; /* Um pouco mais alto para dar imponência */
+    /* Substitua a URL abaixo pela foto do seu prato mais bonito */
+    background: url('https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=1200') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.header-vitrine .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Gradiente escuro que garante que o texto branco apareça perfeitamente */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+}
+
+.header-conteudo {
+    position: relative;
+    z-index: 2;
+    color: white;
+    padding: 0 20px;
+}
+
+.logo-container {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15); /* Fundo translúcido elegante */
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px; /* Formato arredondado moderno */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px auto;
+}
+
+.logo-container i {
+    font-size: 2.5rem;
+    color: #FFF;
+}
+
+.header-conteudo h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.header-conteudo p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.nav-categorias-sticky {
+    position: sticky; top: 0; 
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    z-index: 100; padding: 14px 20px; display: flex; gap: 12px;
+    overflow-x: auto; scrollbar-width: none;
+}
+.nav-categorias-sticky::-webkit-scrollbar { display: none; }
+
+.btn-nav-categoria {
+    white-space: nowrap; padding: 8px 18px; border-radius: 50px;
+    background: #F3F4F6; color: #4B5563; font-weight: 600; font-size: 0.9rem;
+    text-decoration: none; transition: var(--transicao); border: 1px solid transparent;
+}
+.btn-nav-categoria.ativo {
+    background: var(--cor-primaria); color: white;
+    box-shadow: 0 4px 10px rgba(184, 80, 66, 0.2);
+}
+
+.container-vitrine { 
+    max-width: 800px; margin: 0 auto; padding: 0 20px 20px 20px; 
+    background-color: var(--cor-surface); 
+}
+
+.secao-categoria { padding-top: 80px; margin-top: -60px; }
+.titulo-secao-app {
+    font-size: 1.4rem; font-weight: 800; color: #111827;
+    margin-bottom: 0; padding-bottom: 16px; padding-top: 24px;
+}
+
+.lista-nativa-produtos { display: flex; flex-direction: column; }
+.item-nativo {
+    display: flex; flex-direction: row; justify-content: space-between;
+    align-items: flex-start; padding: 20px 0;
+    border-bottom: 1px solid #F3F4F6; gap: 16px;
+    background: transparent; cursor: pointer; transition: background-color 0.2s;
+}
+.item-nativo:last-child { border-bottom: none; }
+.item-nativo:active { background-color: #F9FAFB; }
+
+.item-nativo-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.item-nativo-titulo { font-size: 1.05rem; color: #1F2937; margin-bottom: 6px; font-weight: 600; line-height: 1.3; }
+.item-nativo-desc { font-size: 0.85rem; color: #6B7280; line-height: 1.4; margin-bottom: 12px; display: block; }
+.item-nativo-preco { font-weight: 700; color: #111827; font-size: 1rem; }
+
+.item-nativo-img {
+    width: 100px; height: 100px; flex-shrink: 0; border-radius: 12px; 
+    overflow: hidden; background-color: #F3F4F6; border: 1px solid rgba(0,0,0,0.03);
+}
+.item-nativo-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.footer-vitrine { text-align: center; padding: 40px 20px; color: #9CA3AF; font-size: 0.85rem; }
+.footer-marca { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; font-weight: 600; color: #6B7280; }
+.loading-state, .empty-state { text-align: center; padding: 60px 20px; color: #9CA3AF; }
+.spinner-moderno { width: 36px; height: 36px; margin: 0 auto 16px auto; border: 3px solid #F3F4F6; border-top: 3px solid var(--cor-primaria); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@media (min-width: 768px) {
+    .lista-nativa-produtos { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; }
+    .item-nativo { padding: 24px 0; }
+}
+
+
+/* =========================================
+   2. INTERFACE DE GESTÃO (ADMIN SaaS PANEL)
+   ========================================= */
+.admin-body { background-color: #F8FAFC; }
+.dashboard-layout { display: flex; min-height: 100vh; }
+
+.sidebar { width: 260px; background-color: #111827; color: #9CA3AF; display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-header { padding: 24px; display: flex; align-items: center; gap: 12px; background-color: #1F2937; color: #FFFFFF; }
+.sidebar-logo { width: 40px; height: 40px; background: var(--cor-primaria); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #FFF; }
+.sidebar-header h2 { font-size: 1.1rem; margin: 0; letter-spacing: 0.5px; }
+.sidebar-nav { padding: 20px 0; flex: 1; }
+.nav-item, .nav-item-link { display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: #D1D5DB; text-decoration: none; font-weight: 500; transition: 0.2s; border-left: 4px solid transparent; }
+.nav-item:hover, .nav-item-link:hover, .nav-item.ativo { background-color: #1F2937; color: #FFFFFF; }
+.nav-item.ativo { border-left-color: var(--cor-primaria); }
+.sidebar-footer { padding: 20px 24px; font-size: 0.8rem; border-top: 1px solid #374151; }
+
+.main-content { flex: 1; padding: 30px 40px; display: flex; flex-direction: column; overflow-y: auto; }
+
+.topbar-acoes { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; }
+.page-title { font-size: 1.8rem; color: #111827; margin-bottom: 4px; font-weight: 800; }
+.page-subtitle { color: #64748B; font-size: 0.95rem; }
+
+.botoes-topo { display: flex; gap: 10px; }
+.btn-top-secundario { background: #E2E8F0; color: #0F172A; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-top-secundario:hover { background: #CBD5E1; }
+.btn-top-primario { background: var(--cor-primaria); color: #FFF; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-top-primario:hover { background: var(--cor-primaria-hover); }
+
+.metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+.metric-card { background: #FFF; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; border: 1px solid #E2E8F0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+.metric-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.cat-icon { background: #EFF6FF; color: #2563EB; }
+.active-icon { background: #ECFDF5; color: #059669; }
+.pause-icon { background: #FFF7ED; color: #EA580C; }
+.metric-data { display: flex; flex-direction: column; }
+.metric-label { font-size: 0.85rem; color: #64748B; font-weight: 500; }
+.metric-data h3 { font-size: 1.6rem; color: #1E293B; margin: 0; font-weight: 700; }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+.card-premium { background: #FFF; border-radius: var(--raio-lg); border: 1px solid #E2E8F0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
+.card-header-premium { padding: 20px 24px; border-bottom: 1px solid #F1F5F9; }
+.card-header-title { display: flex; align-items: center; gap: 10px; }
+.card-header-title h3 { font-size: 1.05rem; color: #0F172A; font-weight: 700; }
+.card-body-premium { padding: 24px; }
+
+/* =========================================
+   3. ARQUITETURA DE POP-UPS (SISTEMA MODAL)
+   ========================================= */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 10000; opacity: 0; pointer-events: none; transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.modal-overlay.ativo { opacity: 1; pointer-events: auto; }
+
+.modal-content {
+    background: #FFF; width: 90%; max-width: 500px;
+    border-radius: var(--raio-lg); box-shadow: var(--sombra-md);
+    transform: translateY(20px); transition: 0.3s var(--transicao); max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.ativo .modal-content { transform: translateY(0); }
+
+.modal-header { padding: 20px 24px; border-bottom: 1px solid #F1F5F9; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 1.1rem; color: #0F172A; display: flex; align-items: center; gap: 8px; margin: 0; }
+.btn-fechar-modal { background: #F1F5F9; border: none; width: 32px; height: 32px; border-radius: 8px; color: #64748B; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+.btn-fechar-modal:hover { background: #E2E8F0; color: #0F172A; }
+.modal-body { padding: 24px; }
+
+.separador-modal { font-size: 0.8rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin: 20px 0 10px 0; border-top: 1px solid #F1F5F9; padding-top: 15px; }
+
+.form-alinhado-row { display: flex; gap: 8px; width: 100%; }
+.form-alinhado-row input { flex: 1; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem; outline: none; }
+.form-alinhado-row input:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 3px rgba(184, 80, 66, 0.1); }
+.btn-action-add { background: #0F172A; color: white; border: none; width: 42px; height: 42px; border-radius: 8px; cursor: pointer; }
+.btn-action-add:hover { background: var(--cor-primaria); }
+
+.mini-lista-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-categoria-painel { display: flex; align-items: center; gap: 8px; background: #F1F5F9; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; color: #334155; border: 1px solid #E2E8F0; }
+.tag-categoria-painel button { background: transparent; border: none; color: #94A3B8; cursor: pointer; }
+.tag-categoria-painel button:hover { color: #EF4444; }
+
+.form-profissional-vertical { display: flex; flex-direction: column; gap: 16px; }
+.field-group { display: flex; flex-direction: column; }
+.field-group label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+.field-group input, .field-group textarea, .select-moderno { width: 100%; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem; background: #FFF; outline: none; }
+.field-group input:focus, .field-group textarea:focus, .select-moderno:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 3px rgba(184, 80, 66, 0.1); }
+.btn-submit-premium { width: 100%; padding: 14px; background: var(--cor-primaria); color: #FFF; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-align: center; font-size: 0.95rem; }
+.btn-submit-premium:hover { background: var(--cor-primaria-hover); }
+
+.wrapper-listagem-SaaS { display: flex; flex-direction: column; gap: 12px; }
+.categoria-separador-admin { background-color: #E2E8F0; color: #334155; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; margin-top: 20px; margin-bottom: 5px; text-transform: uppercase; display: inline-block; align-self: flex-start; }
+.item-linha { display: flex; gap: 16px; align-items: center; padding: 16px; border: 1px solid #E5E7EB; border-radius: 8px; background: #fff; }
+.item-linha:hover { border-color: #D1D5DB; background-color: #F8FAFC; }
+.item-pausado-layout { background-color: #F8FAFC !important; border-style: dashed !important; opacity: 0.6; }
+.item-img-min { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #E5E7EB; }
+.item-dados { flex: 1; overflow: hidden; }
+.item-dados-top { display: flex; align-items: center; gap: 10px; margin-bottom: 2px; }
+.item-dados-top h4 { margin: 0; color: #0F172A; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desc-limiter-admin { font-size: 0.85rem; color: #64748B; margin: 0 0 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preco-admin { color: #0F172A; font-weight: 700; font-size: 0.95rem; }
+
+.btn-icon { width: 36px; height: 36px; border-radius: 6px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+/* Estilo do novo botão de Editar (Azul) */
+.btn-icon.edit { background-color: #EFF6FF; color: #3B82F6; }
+.btn-icon.edit:hover { background-color: #DBEAFE; color: #1D4ED8; }
+.btn-icon.toggle { background-color: #F1F5F9; color: #475569; }
+.btn-icon.toggle:hover { background-color: #E2E8F0; color: #0F172A; }
+.btn-icon.delete { background-color: #FEF2F2; color: #EF4444; }
+.btn-icon.delete:hover { background-color: #FEE2E2; }
+
+.dashboard-empty-state { text-align: center; padding: 60px 0; color: #94A3B8; }
+.dashboard-empty-state i { font-size: 2.5rem; margin-bottom: 12px; }
+
+/* =========================================
+   4. MEDIA QUERIES (ADMIN RESPONSIVO)
+   ========================================= */
+@media (max-width: 992px) {
+    .dashboard-layout { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; align-items: center; padding: 0 20px; justify-content: space-between;}
+    .sidebar-nav { display: flex; flex-direction: row; padding: 0; }
+    .sidebar-footer { display: none; }
+    .topbar-acoes { flex-direction: column; align-items: flex-start; }
+    .metrics-row { grid-template-columns: 1fr; }
+    .main-content { padding: 20px; }
+}
+
+@media (max-width: 600px) {
+    .item-linha { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .item-img-min { width: 100%; height: 140px; }
+    .acoes-linha { width: 100%; justify-content: flex-end; border-top: 1px solid #F1F5F9; padding-top: 12px; margin-top: 2px;}
+}
+
+/* =========================================
+   UX PREMIUM: DESIGN "MODERN DINING" (v5.0)
+   ========================================= */
+
+/* Ajustes de Tipografia para maior elegância */
+.titulo-secao-app {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1A1A1A;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+/* Cartão com estilo de "Menu de Restaurante Fino" */
+.item-nativo {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 0;
+    border-bottom: 1px solid #F0F0F0;
+    gap: 20px;
+    transition: var(--transicao);
+}
+
+.item-nativo-info { flex: 1; }
+
+.item-nativo-titulo {
+    font-size: 1.15rem;
+    color: #1A1A1A;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.item-nativo-desc {
+    font-size: 0.9rem;
+    color: #717171; /* Cinza suave para descrição */
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.item-nativo-preco {
+    font-weight: 700;
+    color: var(--cor-primaria);
+    font-size: 1.05rem;
+}
+
+/* Foto com bordas arredondadas suaves e leve sombra */
+.item-nativo-img {
+    width: 110px;
+    height: 110px;
+    border-radius: 8px; /* Cantos menos agressivos */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Navegação tipo "Tab" mais discreta */
+.btn-nav-categoria {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #F4F4F4;
+    color: #555;
+    transition: all 0.3s;
+}
+.btn-nav-categoria.ativo {
+    background: #1A1A1A; /* Fundo escuro elegante para o ativo */
+    color: #FFF;
+}
+
+/* === OCULTAR BARRA DE ROLAGEM MANTENDO O SCROLL === */
+
+/* Para Chrome, Safari e Edge */
+::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Para Firefox */
+* {
+    scrollbar-width: none; /* Oculta a barra no Firefox */
+    -ms-overflow-style: none; /* Oculta a barra no Internet Explorer e Edge antigo */
+}
+
+/* Garantir que o nosso menu sticky continue a deslizar sem a barra */
+.nav-categorias-sticky {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.nav-categorias-sticky::-webkit-scrollbar {
+    display: none;
+}

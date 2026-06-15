@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Churrascado</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-body">
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fa-solid fa-fire-blaze-can"></i>
+                </div>
+                <div>
+                    <h2>Churrascado</h2>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item ativo">
+                    <i class="fa-solid fa-layer-group"></i> 
+                    <span>Gestão de Cardápio</span>
+                </a>
+                <a href="index.html" target="_blank" class="nav-item-link">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> 
+                    <span>Visualizar Vitrina</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p>Sistema Operacional v4.1</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <header class="topbar topbar-acoes">
+                <div class="topbar-welcome">
+                    <h1 class="page-title">Painel de Controlo</h1>
+                    <p class="page-subtitle">Acompanhe e gira o cardápio do seu estabelecimento.</p>
+                </div>
+                <div class="botoes-topo">
+                    <button onclick="abrirModal('modal-categoria')" class="btn-top-secundario">
+                        <i class="fa-solid fa-tags"></i> Gerir Categorias
+                    </button>
+                    <button onclick="abrirModal('modal-produto')" class="btn-top-primario">
+                        <i class="fa-solid fa-plus"></i> Novo Item
+                    </button>
+                </div>
+            </header>
+
+            <section class="metrics-row">
+                <div class="metric-card">
+                    <div class="metric-icon cat-icon"><i class="fa-solid fa-tags"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-label">Categorias</span>
+                        <h3 id="kpi-categorias">0</h3>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon active-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-label">Itens Ativos</span>
+                        <h3 id="kpi-ativos">0</h3>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon pause-icon"><i class="fa-solid fa-circle-pause"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-label">Itens Pausados</span>
+                        <h3 id="kpi-pausados">0</h3>
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="card card-premium container-listagem-cardapio">
+                    <div class="card-header-premium header-flex">
+                        <div class="card-header-title">
+                            <i class="fa-solid fa-list-ul text-dark"></i>
+                            <h3>Catálogo de Produtos</h3>
+                        </div>
+                    </div>
+                    <div class="card-body-premium">
+                        <div id="lista-produtos-admin" class="wrapper-listagem-SaaS">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-categoria" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-folder-plus text-primary"></i> Gerir Categorias</h3>
+                <button class="btn-fechar-modal" onclick="fecharModal('modal-categoria')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-categoria" class="form-alinhado-row">
+                    <input type="text" id="nome-cat" placeholder="Nova categoria..." required>
+                    <button type="submit" class="btn-action-add" title="Criar Categoria">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </form>
+                <div class="separador-modal">Categorias Existentes</div>
+                <div id="lista-categorias-admin" class="mini-lista-tags"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-produto" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-circle-plus text-success"></i> Novo Item do Menu</h3>
+                <button class="btn-fechar-modal" onclick="fecharModal('modal-produto')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-produto" class="form-profissional-vertical">
+                    <div class="field-group">
+                        <label for="nome-prod">Nome do Prato *</label>
+                        <input type="text" id="nome-prod" required placeholder="Ex: Picanha na Chapa">
+                    </div>
+
+                    <div style="display: flex; gap: 15px;">
+                        <div class="field-group" style="flex: 1;">
+                            <label for="preco-prod">Preço (R$) *</label>
+                            <input type="number" step="0.01" id="preco-prod" required placeholder="0.00">
+                        </div>
+                        <div class="field-group" style="flex: 1;">
+                            <label for="categoria-prod">Categoria *</label>
+                            <select id="categoria-prod" required class="select-moderno">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="desc-prod">Descrição Comercial</label>
+                        <textarea id="desc-prod" rows="3" placeholder="Detalhes dos ingredientes, peso e porção..."></textarea>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="img-prod">URL da Foto Ilustrativa</label>
+                        <input type="url" id="img-prod" placeholder="https://site.com/foto.jpg">
+                    </div>
+
+                    <button type="submit" class="btn-submit-premium" style="margin-top: 15px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Publicar no Cardápio
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-produto" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen text-primary"></i> Editar Item</h3>
+                <button class="btn-fechar-modal" onclick="fecharModal('modal-editar-produto')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-produto" class="form-profissional-vertical">
+                    <input type="hidden" id="edit-id-prod">
+
+                    <div class="field-group">
+                        <label for="edit-nome-prod">Nome do Prato *</label>
+                        <input type="text" id="edit-nome-prod" required>
+                    </div>
+
+                    <div style="display: flex; gap: 15px;">
+                        <div class="field-group" style="flex: 1;">
+                            <label for="edit-preco-prod">Preço (R$) *</label>
+                            <input type="number" step="0.01" id="edit-preco-prod" required>
+                        </div>
+                        <div class="field-group" style="flex: 1;">
+                            <label for="edit-categoria-prod">Categoria *</label>
+                            <select id="edit-categoria-prod" required class="select-moderno">
+                                </select>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="edit-desc-prod">Descrição Comercial</label>
+                        <textarea id="edit-desc-prod" rows="3"></textarea>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="edit-img-prod">URL da Foto Ilustrativa</label>
+                        <input type="url" id="edit-img-prod">
+                    </div>
+
+                    <button type="submit" class="btn-submit-premium" style="margin-top: 15px;">
+                        <i class="fa-solid fa-check"></i> Salvar Alterações
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-notificacao" class="toast"></div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
