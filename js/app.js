@@ -1,120 +1,192 @@
 import { db } from './firebase-config.js';
-import { collection, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Listas em memória para unificar os dados do banco de dados
-let listaCategorias = [];
-let listaProdutos = [];
+let produtosGlobais = [];
+let categoriasGlobais = {};
+let categoriaSelecionada = 'todos';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Escuta as categorias em tempo real
-    onSnapshot(collection(db, "categorias"), (snapshotCats) => {
-        listaCategorias = snapshotCats.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderizarVitrinePremium();
+// Mapeamento dos Nós do DOM
+const domCategorias = document.getElementById('menu-categorias');
+const domProdutos = document.getElementById('lista-produtos');
+const telaEntrada = document.getElementById('tela-entrada');
+const telaMenu = document.getElementById('tela-menu');
+const containerModal = document.getElementById('container-modal-cliente');
+
+// Gerenciamento de Transição Controlada de Telas
+window.iniciarCardapio = () => {
+    telaEntrada.classList.add('oculto');
+    telaMenu.classList.remove('oculto');
+    window.scrollTo(0, 0);
+};
+
+// Algoritmo de Correspondência Semântica para Ícones
+function obterIconeCategoria(nomeCategoria) {
+    const nomeLower = nomeCategoria.toLowerCase();
+    if (nomeLower.includes('carne') || nomeLower.includes('churrasco') || nomeLower.includes('espeto')) return 'fa-cow';
+    if (nomeLower.includes('bebida') || nomeLower.includes('suco') || nomeLower.includes('refrigerante')) return 'fa-beer-mug-empty';
+    if (nomeLower.includes('sobremesa') || nomeLower.includes('doce') || nomeLower.includes('pudim')) return 'fa-ice-cream';
+    if (nomeLower.includes('acompanhamento') || nomeLower.includes('porção') || nomeLower.includes('arroz')) return 'fa-bowl-food';
+    return 'fa-tag';
+}
+
+// Escuta em Tempo Real: Categorias
+onSnapshot(collection(db, "categorias"), (snap) => {
+    categoriasGlobais = {};
+    snap.forEach(doc => {
+        categoriasGlobais[doc.id] = doc.data().nome;
     });
-
-    // 2. Escuta os produtos ativos em tempo real
-    const qProdutos = query(collection(db, "produtos"), where("ativo", "==", true));
-    onSnapshot(qProdutos, (snapshotProds) => {
-        listaProdutos = snapshotProds.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderizarVitrinePremium();
-    });
+    renderizarMenuCategorias();
 });
 
-// FUNÇÃO RENDERIZADORA: Cruza as duas coleções instantaneamente
-function renderizarVitrinePremium() {
-    const containerProdutos = document.getElementById('lista-produtos');
-    const menuCategorias = document.getElementById('menu-categorias');
-    
-    if (!containerProdutos || !menuCategorias) return;
-
-    // Cria um dicionário de ID -> Nome da Categoria para mapeamento rápido
-    const dicionarioCats = {};
-    listaCategorias.forEach(c => {
-        dicionarioCats[c.id] = c.nome;
+// Escuta em Tempo Real: Produtos Ativos
+onSnapshot(collection(db, "produtos"), (snap) => {
+    produtosGlobais = [];
+    snap.forEach(doc => {
+        const p = doc.data();
+        if (p.ativo) {
+            produtosGlobais.push({ id: doc.id, ...p });
+        }
     });
+    renderizarProdutos();
+});
 
-    if (listaProdutos.length === 0) {
-        containerProdutos.innerHTML = `
-            <div class="empty-state">
-                <i class="fa-solid fa-plate-wheat"></i>
-                <p>O nosso fogão está a aquecer.<br>O cardápio estará disponível em breve!</p>
-            </div>`;
-        menuCategorias.innerHTML = '';
+function renderizarMenuCategorias() {
+    let html = `<button class="btn-nav-categoria ${categoriaSelecionada === 'todos' ? 'ativo' : ''}" onclick="mudarCategoria('todos')">
+                    <i class="fa-solid fa-star"></i> Todos
+                </button>`;
+    
+    const catsArray = Object.entries(categoriasGlobais).sort((a, b) => a[1].localeCompare(b[1]));
+    
+    catsArray.forEach(([id, nome]) => {
+        const icone = obterIconeCategoria(nome);
+        html += `<button class="btn-nav-categoria ${categoriaSelecionada === id ? 'ativo' : ''}" onclick="mudarCategoria('${id}')">
+                    <i class="fa-solid ${icone}"></i> ${nome}
+                 </button>`;
+    });
+    
+    domCategorias.innerHTML = html;
+}
+
+window.mudarCategoria = (idCategoria) => {
+    categoriaSelecionada = idCategoria;
+    renderizarMenuCategorias();
+    renderizarProdutos();
+};
+
+// Componente de Cartão Isolado para Evitar Duplicação de Código (DRY)
+function criarCardProdutoHTML(p) {
+    const imgDisplay = p.imagemUrl || "https://images.unsplash.com/photo-1544025162-831550f83fc4?w=150";
+    const ehDestaque = p.nome.toLowerCase().includes('picanha') || p.nome.toLowerCase().includes('especial') || p.nome.toLowerCase().includes('premium');
+    const badgeHtml = ehDestaque ? `<div class="badge-destaque"><i class="fa-solid fa-fire"></i> Sucesso</div>` : '';
+
+    return `
+        <div class="card-produto-mobile" onclick="abrirPopUpProduto('${p.id}')">
+            <div class="img-container-mobile">
+                <img src="${imgDisplay}" alt="${p.nome}" class="img-mobile-card">
+                ${badgeHtml}
+            </div>
+            <div class="info-mobile-card">
+                <h3 class="nome-mobile-card">${p.nome}</h3>
+                <span class="preco-mobile-card">R$ ${p.preco.toFixed(2)}</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderizarProdutos() {
+    domProdutos.innerHTML = '';
+    
+    if (produtosGlobais.length === 0) {
+        domProdutos.innerHTML = `<div class="empty-state" style="text-align:center; padding: 60px 20px; color: #888; font-weight: 500;">Não existem itens disponíveis no momento.</div>`;
         return;
     }
 
-    // Agrupa os produtos de acordo com o nome real da categoria
-    const grupos = {};
-    listaProdutos.forEach(p => {
-        const nomeCategoria = dicionarioCats[p.categoriaId] || "Outros";
-        if (!grupos[nomeCategoria]) {
-            grupos[nomeCategoria] = [];
-        }
-        grupos[nomeCategoria].push(p);
-    });
+    if (categoriaSelecionada === 'todos') {
+        // Agrupamento Estruturado por Categoria
+        const grupos = {};
+        produtosGlobais.forEach(p => {
+            const nomeCat = categoriasGlobais[p.categoriaId] || "Sem Categoria";
+            if (!grupos[nomeCat]) grupos[nomeCat] = [];
+            grupos[nomeCat].push(p);
+        });
 
-    // Limpa os elementos visuais antes de redesenhar
-    containerProdutos.innerHTML = '';
-    menuCategorias.innerHTML = '';
+        const categoriasOrdenadas = Object.keys(grupos).sort();
 
-    // Ordena as categorias alfabeticamente (deixando a categoria 'Outros' por último, se existir)
-    const nomesCategoriasOrdenadas = Object.keys(grupos).sort((a, b) => {
-        if (a === "Outros") return 1;
-        if (b === "Outros") return -1;
-        return a.localeCompare(b);
-    });
+        categoriasOrdenadas.forEach(nomeCat => {
+            const itensDoGrupo = grupos[nomeCat];
+            itensDoGrupo.sort((a, b) => a.nome.localeCompare(b.nome));
 
-    // 1. GERA A BARRA DE NAVEGAÇÃO SUPERIOR (STICKY NAV)
-    nomesCategoriasOrdenadas.forEach((nomeGrupo, index) => {
-        const idAncora = `secao-${nomeGrupo.replace(/\s+/g, '')}`;
-        const classeAtivo = index === 0 ? 'ativo' : '';
-        
-        menuCategorias.innerHTML += `
-            <a href="#${idAncora}" class="btn-nav-categoria ${classeAtivo}" onclick="ativarAba(event, this)">
-                ${nomeGrupo}
-            </a>
-        `;
-    });
-
-    // 2. GERA AS SEÇÕES DE PRODUTOS (PADRÃO FLAT LIST DE ALTA CONVERSÃO)
-    nomesCategoriasOrdenadas.forEach(nomeGrupo => {
-        const pratos = grupos[nomeGrupo];
-        pratos.sort((a, b) => a.nome.localeCompare(b.nome));
-
-        const idAncora = `secao-${nomeGrupo.replace(/\s+/g, '')}`;
-
-        let secaoHTML = `
-            <section id="${idAncora}" class="secao-categoria">
-                <h2 class="titulo-secao-app">${nomeGrupo}</h2>
-                <div class="lista-nativa-produtos">
-        `;
-
-        pratos.forEach(p => {
-            const imagemPadrao = "https://images.unsplash.com/photo-1544025162-831550f83fc4?w=500&q=80";
-            const imgUrl = p.imagemUrl ? p.imagemUrl : imagemPadrao;
-            
-            secaoHTML += `
-                <div class="item-nativo">
-                    <div class="item-nativo-info">
-                        <h3 class="item-nativo-titulo">${p.nome}</h3>
-                        <p class="item-nativo-desc">${p.descricao || 'Sabor de casa, preparado com muito carinho.'}</p>
-                        <span class="item-nativo-preco">R$ ${p.preco.toFixed(2)}</span>
-                    </div>
-                    
-                    <div class="item-nativo-img">
-                        <img src="${imgUrl}" alt="${p.nome}" loading="lazy">
-                    </div>
+            // Injeta o Cabeçalho da Categoria com o Ícone Dinâmico
+            const icone = obterIconeCategoria(nomeCat);
+            domProdutos.innerHTML += `
+                <h2 class="titulo-categoria-vitrine">
+                    <i class="fa-solid ${icone}"></i> ${nomeCat}
+                </h2>
+                <div class="lista-mobile-produtos">
+                    ${itensDoGrupo.map(p => criarCardProdutoHTML(p)).join('')}
                 </div>
             `;
         });
+    } else {
+        // Filtragem Direta para Categoria Isolada
+        const produtosFiltrados = produtosGlobais.filter(p => p.categoriaId === categoriaSelecionada);
+        produtosFiltrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
-        secaoHTML += `</div></section>`;
-        containerProdutos.innerHTML += secaoHTML;
-    });
+        const nomeCat = categoriasGlobais[categoriaSelecionada] || "Categoria";
+        const icone = obterIconeCategoria(nomeCat);
+
+        domProdutos.innerHTML += `
+            <h2 class="titulo-categoria-vitrine">
+                <i class="fa-solid ${icone}"></i> ${nomeCat}
+            </h2>
+        `;
+
+        if (produtosFiltrados.length === 0) {
+            domProdutos.innerHTML += `<div class="empty-state" style="text-align:center; padding: 40px 20px; color: #888;">Nenhum produto disponível nesta categoria.</div>`;
+            return;
+        }
+
+        domProdutos.innerHTML += `
+            <div class="lista-mobile-produtos">
+                ${produtosFiltrados.map(p => criarCardProdutoHTML(p)).join('')}
+            </div>
+        `;
+    }
 }
 
-// Controla graficamente o estado ativo da barra de navegação
-window.ativarAba = (event, elemento) => {
-    document.querySelectorAll('.btn-nav-categoria').forEach(btn => btn.classList.remove('ativo'));
-    elemento.classList.add('ativo');
+window.abrirPopUpProduto = (idProduto) => {
+    const p = produtosGlobais.find(item => item.id === idProduto);
+    if (!p) return;
+
+    const imgDisplay = p.imagemUrl || "https://images.unsplash.com/photo-1544025162-831550f83fc4?w=400";
+    
+    containerModal.innerHTML = `
+        <div id="modal-detalhe" class="modal-overlay">
+            <div class="modal-vitrine-centered">
+                <div class="modal-header-img" style="background-image: url('${imgDisplay}')">
+                    <button class="btn-fechar-circulo" onclick="fecharPopUpProduto()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="glass-body-centered">
+                    <h2 style="font-family: 'Playfair Display', serif; margin-bottom: 5px; color: #111; font-size: 1.5rem;">${p.nome}</h2>
+                    <h3 style="color: var(--cor-primaria); margin-bottom: 15px; font-size: 1.3rem;">R$ ${p.preco.toFixed(2)}</h3>
+                    <p style="color: #555; font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px;">
+                        ${p.descricao || 'Este item não possui uma descrição comercial informada.'}
+                    </p>
+                    <button class="btn-submit-premium" onclick="fecharPopUpProduto()">
+                        <i class="fa-solid fa-arrow-left"></i> Voltar ao Cardápio
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    setTimeout(() => document.getElementById('modal-detalhe').classList.add('ativo'), 10);
+};
+
+window.fecharPopUpProduto = () => {
+    const modal = document.getElementById('modal-detalhe');
+    if (modal) {
+        modal.classList.remove('ativo');
+        setTimeout(() => modal.remove(), 300);
+    }
 };

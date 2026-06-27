@@ -2,9 +2,8 @@ import { db } from './firebase-config.js';
 import { collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let mapaCategorias = {};
-let listaProdutosGlobal = []; // Guarda todos os produtos para facilitar a edição
+let listaProdutosGlobal = [];
 
-// ================== CONTROLO DOS MODAIS ==================
 window.abrirModal = (id) => document.getElementById(id).classList.add('ativo');
 window.fecharModal = (id) => document.getElementById(id).classList.remove('ativo');
 
@@ -28,20 +27,20 @@ document.getElementById('form-categoria').addEventListener('submit', async (e) =
     }
 });
 
-window.apagarCategoria = async (id) => {
-    if (confirm("Deseja remover esta categoria? Itens vinculados ficarão sem categoria.")) {
+window.apagarCategoria = (id) => {
+    confirmarAcaoInterface("Deseja remover esta categoria? Itens vinculados ficarão temporariamente órfãos.", async () => {
         try {
             await deleteDoc(doc(db, "categorias", id));
-            mostrarToast("Categoria removida.");
+            mostrarToast("Categoria removida com sucesso.");
         } catch (error) {
             mostrarToast("Erro ao excluir categoria.");
         }
-    }
+    });
 };
 
 onSnapshot(collection(db, "categorias"), (snap) => {
     const selectNovo = document.getElementById('categoria-prod');
-    const selectEdit = document.getElementById('edit-categoria-prod'); // O select do modal de edição
+    const selectEdit = document.getElementById('edit-categoria-prod');
     const listaUI = document.getElementById('lista-categorias-admin');
     const kpiCategorias = document.getElementById('kpi-categorias');
     
@@ -62,8 +61,6 @@ onSnapshot(collection(db, "categorias"), (snap) => {
 
     cats.forEach(c => {
         mapaCategorias[c.id] = c.nome;
-        
-        // Adiciona as opções nos dois selects (Novo e Editar)
         const optionHTML = `<option value="${c.id}">${c.nome}</option>`;
         selectNovo.innerHTML += optionHTML;
         selectEdit.innerHTML += optionHTML;
@@ -74,11 +71,12 @@ onSnapshot(collection(db, "categorias"), (snap) => {
                 <button onclick="apagarCategoria('${c.id}')"><i class="fa-solid fa-xmark"></i></button>
             </div>`;
     });
+
+    // Força a atualização dos nomes das categorias na listagem de itens
+    renderizarProdutosAdmin();
 });
 
 // ================== GERENCIADOR DE PRODUTOS ==================
-
-// 1. ADICIONAR NOVO PRODUTO
 document.getElementById('form-produto').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btnSubmit = e.target.querySelector('button');
@@ -107,7 +105,6 @@ document.getElementById('form-produto').addEventListener('submit', async (e) => 
     }
 });
 
-// 2. EDITAR PRODUTO EXISTENTE
 document.getElementById('form-editar-produto').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btnSubmit = e.target.querySelector('button');
@@ -136,43 +133,37 @@ document.getElementById('form-editar-produto').addEventListener('submit', async 
     }
 });
 
-// ================== LISTAGEM E AÇÕES NA TABELA ==================
-onSnapshot(collection(db, "produtos"), (snap) => {
+// ================== RENDERIZAÇÃO FILTRADA (MECANISMO DE BUSCA LOCAL) ==================
+function renderizarProdutosAdmin() {
     const container = document.getElementById('lista-produtos-admin');
-    const kpiAtivos = document.getElementById('kpi-ativos');
-    const kpiPausados = document.getElementById('kpi-pausados');
+    if (!container) return;
     
     container.innerHTML = '';
-    listaProdutosGlobal = []; // Limpa e recarrega a lista global
-    let contagemAtivos = 0;
-    let contagemPausados = 0;
+    
+    const termoBusca = document.getElementById('busca-produto-admin')?.value.toLowerCase().trim() || '';
+    
+    // Algoritmo de filtragem local por correspondência parcial
+    const produtosFiltrados = listaProdutosGlobal.filter(p => 
+        p.nome.toLowerCase().includes(termoBusca) || 
+        (p.descricao && p.descricao.toLowerCase().includes(termoBusca))
+    );
 
-    if (snap.empty) {
-        kpiAtivos.innerText = "0";
-        kpiPausados.innerText = "0";
+    if (produtosFiltrados.length === 0) {
         container.innerHTML = `
-            <div class="dashboard-empty-state">
-                <i class="fa-solid fa-box-open"></i>
-                <p>O seu cardápio está vazio.</p>
-                <button onclick="abrirModal('modal-produto')" class="btn-top-primario" style="margin-top: 15px;">Adicionar Primeiro Item</button>
+            <div class="dashboard-empty-state" style="text-align: center; padding: 40px 0; color: #94A3B8;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                <p>${listaProdutosGlobal.length === 0 ? 'O seu cardápio está vazio.' : 'Nenhum item corresponde à sua pesquisa.'}</p>
             </div>`;
         return;
     }
 
     const grupos = {};
 
-    snap.forEach(doc => {
-        const p = { id: doc.id, ...doc.data() };
-        listaProdutosGlobal.push(p); // Salva na memória global para a edição funcionar
-
-        if (p.ativo) contagemAtivos++; else contagemPausados++;
+    produtosFiltrados.forEach(p => {
         const nomeDaCategoria = mapaCategorias[p.categoriaId] || "Sem Categoria";
         if (!grupos[nomeDaCategoria]) grupos[nomeDaCategoria] = [];
         grupos[nomeDaCategoria].push(p);
     });
-
-    kpiAtivos.innerText = contagemAtivos;
-    kpiPausados.innerText = contagemPausados;
 
     Object.keys(grupos).sort().forEach(nomeCat => {
         const itens = grupos[nomeCat];
@@ -184,8 +175,8 @@ onSnapshot(collection(db, "produtos"), (snap) => {
             const imgDisplay = p.imagemUrl || "https://images.unsplash.com/photo-1544025162-831550f83fc4?w=150";
             const itemClasseStatus = p.ativo ? "" : "item-pausado-layout";
             const badgeHTML = p.ativo 
-                ? `<span class="badge-status badge-ativo">Disponível</span>` 
-                : `<span class="badge-status badge-pausado">Pausado</span>`;
+                ? `<span class="badge-status badge-ativo" style="background:#ECFDF5; color:#059669; padding:2px 8px; font-size:0.75rem; font-weight:600; border-radius:4px;">Disponível</span>` 
+                : `<span class="badge-status badge-pausado" style="background:#FEF2F2; color:#EF4444; padding:2px 8px; font-size:0.75rem; font-weight:600; border-radius:4px;">Pausado</span>`;
                 
             const iconeToggle = p.ativo ? "fa-eye-slash" : "fa-eye";
 
@@ -193,18 +184,17 @@ onSnapshot(collection(db, "produtos"), (snap) => {
                 <div class="item-linha ${itemClasseStatus}">
                     <img src="${imgDisplay}" class="item-img-min" alt="">
                     <div class="item-dados">
-                        <div class="item-dados-top">
+                        <div class="item-dados-top" style="display:flex; align-items:center; gap:8px;">
                             <h4>${p.nome}</h4>
                             ${badgeHTML}
                         </div>
-                        <p class="desc-limiter-admin">${p.descricao || 'Sem descrição.'}</p>
+                        <p class="desc-limiter-admin">${p.descricao || 'Sem descrição cadastrada.'}</p>
                         <strong class="preco-admin">R$ ${p.preco.toFixed(2)}</strong>
                     </div>
-                    <div class="acoes-linha">
+                    <div class="acoes-linha" style="display:flex; gap:6px;">
                         <button onclick="abrirEdicao('${p.id}')" class="btn-icon edit" title="Editar Informações">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        
                         <button onclick="alternarStatus('${p.id}', ${p.ativo})" class="btn-icon toggle" title="Ocultar/Exibir">
                             <i class="fa-solid ${iconeToggle}"></i>
                         </button>
@@ -215,15 +205,36 @@ onSnapshot(collection(db, "produtos"), (snap) => {
                 </div>`;
         });
     });
+}
+
+// Ouvinte em Tempo Real do Firestore (Monitora adições, remoções e status)
+onSnapshot(collection(db, "produtos"), (snap) => {
+    const kpiAtivos = document.getElementById('kpi-ativos');
+    const kpiPausados = document.getElementById('kpi-pausados');
+    
+    listaProdutosGlobal = [];
+    let contagemAtivos = 0;
+    let contagemPausados = 0;
+
+    snap.forEach(doc => {
+        const p = { id: doc.id, ...doc.data() };
+        listaProdutosGlobal.push(p);
+        if (p.ativo) contagemAtivos++; else contagemPausados++;
+    });
+
+    if (kpiAtivos) kpiAtivos.innerText = contagemAtivos;
+    if (kpiPausados) kpiPausados.innerText = contagemPausados;
+
+    renderizarProdutosAdmin();
 });
 
-// Ações disparadas pelos botões da lista
+// Vinculação do evento de digitação do input para filtragem reativa
+document.getElementById('busca-produto-admin')?.addEventListener('input', renderizarProdutosAdmin);
+
 window.abrirEdicao = (idProduto) => {
-    // Procura o produto na lista global usando o ID
     const p = listaProdutosGlobal.find(item => item.id === idProduto);
     if(!p) return;
 
-    // Preenche os campos do formulário de edição
     document.getElementById('edit-id-prod').value = p.id;
     document.getElementById('edit-nome-prod').value = p.nome;
     document.getElementById('edit-preco-prod').value = p.preco;
@@ -231,12 +242,21 @@ window.abrirEdicao = (idProduto) => {
     document.getElementById('edit-desc-prod').value = p.descricao || '';
     document.getElementById('edit-img-prod').value = p.imagemUrl || '';
 
-    // Abre o Modal
     abrirModal('modal-editar-produto');
 };
 
 window.alternarStatus = async (id, statusAtual) => updateDoc(doc(db, "produtos", id), { ativo: !statusAtual });
-window.apagarProduto = async (id) => { if (confirm("Tem a certeza que deseja apagar permanentemente este produto?")) deleteDoc(doc(db, "produtos", id)); };
+
+window.apagarProduto = (id) => { 
+    confirmarAcaoInterface("Tem a certeza que deseja apagar permanentemente este produto?", async () => {
+        try {
+            await deleteDoc(doc(db, "produtos", id));
+            mostrarToast("Produto excluído do sistema.");
+        } catch (error) {
+            mostrarToast("Erro ao excluir produto.");
+        }
+    }); 
+};
 
 function mostrarToast(mensagem) {
     const toast = document.getElementById('toast-notificacao');
@@ -245,3 +265,35 @@ function mostrarToast(mensagem) {
     toast.classList.add('mostrar');
     setTimeout(() => toast.classList.remove('mostrar'), 3000);
 }
+
+window.confirmarAcaoInterface = (mensagem, callbackConfirmacao) => {
+    let modalConfirma = document.getElementById('modal-confirmacao-ui');
+    
+    if (!modalConfirma) {
+        modalConfirma = document.createElement('div');
+        modalConfirma.id = 'modal-confirmacao-ui';
+        modalConfirma.className = 'modal-overlay';
+        document.body.appendChild(modalConfirma);
+    }
+
+    modalConfirma.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 30px 20px; border-radius:16px;">
+            <div style="font-size: 3rem; color: #EA580C; margin-bottom: 15px;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="margin-bottom: 10px; color: #1E293B; font-weight:700;">Confirmação</h3>
+            <p style="color: #64748B; margin-bottom: 25px; line-height: 1.5; font-size:0.95rem;">${mensagem}</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="document.getElementById('modal-confirmacao-ui').classList.remove('ativo')" class="btn-top-secundario" style="flex: 1; padding:10px;">Cancelar</button>
+                <button id="btn-confirmar-ui" class="btn-top-primario" style="flex: 1; background-color: #EF4444; padding:10px;">Confirmar</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('btn-confirmar-ui').onclick = () => {
+        callbackConfirmacao();
+        modalConfirma.classList.remove('ativo');
+    };
+
+    setTimeout(() => modalConfirma.classList.add('ativo'), 10);
+};
