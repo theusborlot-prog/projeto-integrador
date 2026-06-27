@@ -40,8 +40,8 @@
             
             <header class="topbar topbar-acoes">
                 <div class="topbar-welcome">
-                    <h1 class="page-title">Painel de Controlo</h1>
-                    <p class="page-subtitle">Acompanhe e gira o cardápio do seu estabelecimento.</p>
+                    <h1 class="page-title">Painel de Controle</h1>
+                    <p class="page-subtitle">Acompanhe e gira o cardápio do seu establishment.</p>
                 </div>
                 <div class="botoes-topo">
                     <button onclick="abrirModal('modal-categoria')" class="btn-top-secundario">
@@ -79,15 +79,19 @@
 
             <div class="dashboard-grid">
                 <div class="card card-premium container-listagem-cardapio">
-                    <div class="card-header-premium header-flex">
+                    <div class="card-header-premium header-flex" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <div class="card-header-title">
                             <i class="fa-solid fa-list-ul text-dark"></i>
                             <h3>Catálogo de Produtos</h3>
                         </div>
+                        
+                        <div class="busca-admin-container" style="position: relative; flex: 1; max-width: 320px; min-width: 220px;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748B;"></i>
+                            <input type="text" id="busca-produto-admin" placeholder="Pesquisar por nome ou descrição..." style="width: 100%; padding: 10px 14px 10px 38px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.9rem; outline: none; background: #F8FAFC;">
+                        </div>
                     </div>
                     <div class="card-body-premium">
-                        <div id="lista-produtos-admin" class="wrapper-listagem-SaaS">
-                            </div>
+                        <div id="lista-produtos-admin" class="wrapper-listagem-SaaS"></div>
                     </div>
                 </div>
             </div>
@@ -179,8 +183,7 @@
                         </div>
                         <div class="field-group" style="flex: 1;">
                             <label for="edit-categoria-prod">Categoria *</label>
-                            <select id="edit-categoria-prod" required class="select-moderno">
-                                </select>
+                            <select id="edit-categoria-prod" required class="select-moderno"></select>
                         </div>
                     </div>
 
