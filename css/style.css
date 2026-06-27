@@ -238,7 +238,7 @@ html { scroll-behavior: smooth; }
 .botoes-topo { display: flex; gap: 10px; }
 .btn-top-secundario { background: #E2E8F0; color: #0F172A; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .btn-top-secundario:hover { background: #CBD5E1; }
-.btn-top-primaria { background: var(--cor-primaria); color: #FFF; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-top-primario { background: var(--cor-primaria); color: #FFF; border: none; padding: 11px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .btn-top-primario:hover { background: var(--cor-primaria-hover); }
 
 .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
